@@ -21,9 +21,13 @@ const reportQueue = new Queue(
 
 
 
-/*
-Create report job
-*/
+app.get("/", (req,res)=>{
+
+    res.send("PDF Generator API is running");
+
+});
+
+
 
 app.post("/reports", async(req,res)=>{
 
@@ -39,7 +43,6 @@ app.post("/reports", async(req,res)=>{
 
 
         const reportId = result.rows[0].id;
-
 
 
         await reportQueue.add(
@@ -68,40 +71,39 @@ app.post("/reports", async(req,res)=>{
 
     }
 
-
 });
 
 
-
-
-
-/*
-Check report status
-*/
 
 app.get("/reports/:id", async(req,res)=>{
 
+    try{
 
-    const result = await pool.query(
-        `
-        SELECT *
-        FROM reports
-        WHERE id=$1
-        `,
-        [
-            req.params.id
-        ]
-    );
+        const result = await pool.query(
+            `
+            SELECT *
+            FROM reports
+            WHERE id=$1
+            `,
+            [
+                req.params.id
+            ]
+        );
 
 
-    res.json(
-        result.rows[0]
-    );
+        res.json(result.rows[0]);
 
+    }
+
+    catch(error){
+
+        res.status(500).json({
+            error:error.message
+        });
+
+    }
 
 });
-
-
 
 
 
