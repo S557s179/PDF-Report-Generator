@@ -17,12 +17,10 @@ const worker = new Worker(
 
 "report-generation",
 
-
 async(job)=>{
 
 
     const reportId = job.data.reportId;
-
 
 
     console.log(
@@ -32,30 +30,17 @@ async(job)=>{
 
 
 
-    /*
-       Query aggregated data
-    */
-
     const result = await pool.query(
         `
         SELECT
             category,
             COUNT(*) AS total_orders,
             SUM(amount) AS revenue
-
         FROM orders
-
         GROUP BY category
         `
     );
 
-
-
-
-
-    /*
-       Create PDF
-    */
 
 
     const filePath =
@@ -66,10 +51,8 @@ async(job)=>{
     const pdf = new PDFDocument();
 
 
-
     const stream =
     fs.createWriteStream(filePath);
-
 
 
     pdf.pipe(stream);
@@ -86,18 +69,16 @@ async(job)=>{
 
     result.rows.forEach(row=>{
 
-
         pdf.fontSize(14)
         .text(
-        `${row.category}
+`
+Category: ${row.category}
 Orders: ${row.total_orders}
 Revenue: $${row.revenue}
-        `
+`
         );
 
-
         pdf.moveDown();
-
 
     });
 
@@ -107,38 +88,28 @@ Revenue: $${row.revenue}
 
 
 
-
     await new Promise(resolve=>{
+
         stream.on(
             "finish",
             resolve
         );
+
     });
 
 
 
-
-    /*
-       Update report
-    */
-
-
     await pool.query(
-
         `
         UPDATE reports
-
         SET status='completed',
             file_path=$1
-
         WHERE id=$2
         `,
-
         [
             filePath,
             reportId
         ]
-
     );
 
 
@@ -153,11 +124,10 @@ Revenue: $${row.revenue}
 
 
 {
-connection:{
-    host:process.env.REDIS_HOST,
-    port:process.env.REDIS_PORT
-}
-
+    connection:{
+        host:process.env.REDIS_HOST,
+        port:process.env.REDIS_PORT
+    }
 }
 
 );
